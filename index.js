@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //jwt here
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -20,8 +20,14 @@ async function run() {
         const phonesCategory=client.db('easyBuy').collection('PhonesCategory')
         app.get('/category', async (req, res) => {
             const query = {}
-            const phoneCategory = await phonesCategory.find(query).toArray();
-            res.send(phoneCategory)
+            const Category = await phonesCategory.find(query).toArray();
+            res.send(Category)
+        })
+        app.get('/category/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const phones = await phonesCategory.findOne(query)
+            res.send(phones)
         })
     } 
     finally {
