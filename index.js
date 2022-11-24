@@ -38,6 +38,7 @@ function verifyJWT(req, res, next) {
 async function run() {
     try {
         const phonesCategory=client.db('easyBuy').collection('PhonesCategory')
+        const bookingsCollection =client.db('easyBuy').collection('bookingsPhone')
         app.get('/category', async (req, res) => {
             const query = {}
             const Category = await phonesCategory.find(query).toArray();
@@ -48,6 +49,11 @@ async function run() {
             const query = { _id: ObjectId(id) }
             const phones = await phonesCategory.findOne(query)
             res.send(phones)
+        })
+        app.post('/booking', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingsCollection.insertOne(booking);
+            res.send(result);
         })
     } 
     finally {
