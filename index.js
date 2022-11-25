@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-//jwt here
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 const app = express();
@@ -39,6 +39,8 @@ async function run() {
     try {
         const phonesCategory=client.db('easyBuy').collection('PhonesCategory')
         const bookingsCollection =client.db('easyBuy').collection('bookingsPhone')
+        const usersCollection =client.db('easyBuy').collection('users')
+       
         app.get('/category', async (req, res) => {
             const query = {}
             const Category = await phonesCategory.find(query).toArray();
@@ -50,11 +52,40 @@ async function run() {
             const phones = await phonesCategory.findOne(query)
             res.send(phones)
         })
+        app.get('/booking',  async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const bookings = await bookingsCollection.find(query).toArray();
+            res.send(bookings);
+        });
         app.post('/booking', async (req, res) => {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking);
             res.send(result);
         })
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '10d' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        });
+           app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' });
+        })
+           
+
     } 
     finally {
         
