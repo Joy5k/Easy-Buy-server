@@ -105,6 +105,8 @@ async function run() {
             const result = await usersCollection.find(query).toArray();
             res.send(result);
         });
+
+        //delete Buyers from admin dashboard
         app.delete('/user/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);
@@ -142,6 +144,8 @@ async function run() {
             const result = await phonesCategory.find(query).toArray();
             res.send(result)
         })
+
+        //delete products from seller in dashboard
         app.delete('/myproducts/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -149,6 +153,20 @@ async function run() {
             res.send(result);
     
         })
+        app.put('/report/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    report: 'reported'
+                }
+            }
+            const result = await phonesCategory.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+
     } 
     finally {
         
