@@ -165,6 +165,12 @@ async function run() {
             const result = await phonesCategory.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
+        app.get('/report', async (req, res) => {
+            const email = req.query.report
+            const query = { report: email };
+            const result = await phonesCategory.find(query).toArray();
+            res.send(result)
+        })
 
 
     } 
