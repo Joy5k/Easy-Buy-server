@@ -132,12 +132,13 @@ async function run() {
             const result = await phonesCategory.find(query).toArray();
             res.send(result)
         })
-        app.get('/booking', async (req, res) => {
-            const email = req.query.email
-            const query = { email: email };
-            const bookings = await bookingsCollection.find(query).toArray();
-            res.send(bookings);
-        });
+        app.delete('/myproducts/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await phonesCategory.deleteOne(query);
+            res.send(result);
+    
+        })
     } 
     finally {
         
