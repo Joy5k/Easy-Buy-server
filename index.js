@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, Admin } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -112,12 +112,21 @@ async function run() {
             const result = await usersCollection.deleteOne(query);
             res.send(result);
         })
+        // get all sellers in admin dashboard
         app.get('/seller/:seller', async (req, res) => {
             const seller = req.params.seller;
             const query = {role:seller};
             const result = await usersCollection.find(query).toArray();
             res.send(result);
         });
+        // delete sellers from Admin dashboard
+        app.delete('/seller/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await usersCollection.deleteOne(query)
+            res.send(result);
+            
+})
         // addPhone
 
         app.put('/addPhone', async (req, res) => {
@@ -126,6 +135,7 @@ async function run() {
             res.send(result);
         })
         //Get My all Prodcuts
+
         app.get('/myproduct', async (req, res) => {
             const email = req.query.email
             const query = { email: email };
