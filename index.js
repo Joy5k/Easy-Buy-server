@@ -13,19 +13,18 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ctmwtm0.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-
 function verifyJWT(req, res, next) {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization
     if (!authHeader) {
-        return res.status(401).send('unauthorized access');
+  return  res.status(401).send({message:'unauthorized access'})
     }
     const token = authHeader.split(' ')[1];
     jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
         if (err) {
-            return res.status(403).send({ message: 'forbidden access' })
+            return  res.status(401).send({message:'unauthorized access'})
         }
-        req.decoded = decoded;
-        next();
+        req.decoded=decoded
+        next()
     })
 }
 
@@ -63,13 +62,14 @@ async function run() {
             res.send(result)
 
         })
-        app.get('/booking', async (req, res) => {
+        app.get('/booking',verifyJWT, async (req, res) => {
             const email = req.query.email;
-            // const decodedEmail = req.decoded.email;
+            const decoded = req.decoded;
+            if (decoded.email !== email) {
+             res.status(403).send({ message: 'forbidden access' });
+            }
+    
 
-            // if (email !== decodedEmail) {
-            //     return res.status(403).send({ message: 'forbidden access' });
-            // }
 
             const query = { email: email };
             const bookings = await bookingsCollection.find(query).toArray();
@@ -95,6 +95,14 @@ async function run() {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking);
             res.send(result);
+        })
+
+        // verify user by  json web token
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            console.log(user)
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '7d' })
+            res.send({token})
         })
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -161,7 +169,6 @@ async function run() {
             
 })
         // addPhone
-
         app.put('/addPhone', async (req, res) => {
             const query = req.body;
             const result = await phonesCategory.insertOne(query);
@@ -221,6 +228,15 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
 })
+    //checking  is seller verified? 
+        app.get('/sellerVerified/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const query = { email: id }
+            console.log(query);
+            const result = await usersCollection.findOne(query)
+            res.send(result)
+        })
 
     } 
     finally {
