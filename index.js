@@ -138,7 +138,7 @@ async function run() {
 
         // get all buyers
         
-        app.get('/users/:users', async (req, res) => {
+        app.get('/users/:users',verifyJWT, async (req, res) => {
             const users = req.params.users;
             const query = {role:users};
             const result = await usersCollection.find(query).toArray();
@@ -146,7 +146,7 @@ async function run() {
         });
 
         //delete Buyers from admin dashboard
-        app.delete('/user/:id', async (req, res) => {
+        app.delete('/user/:id',verifyJWT, async (req, res) => {
             const id = req.params.id;
             console.log(id);
             const query = { _id: ObjectId(id) }
@@ -154,14 +154,14 @@ async function run() {
             res.send(result);
         })
         // get all sellers in admin dashboard
-        app.get('/seller/:seller', async (req, res) => {
+        app.get('/seller/:seller',verifyJWT, async (req, res) => {
             const seller = req.params.seller;
             const query = {role:seller};
             const result = await usersCollection.find(query).toArray();
             res.send(result);
         });
         // delete sellers from Admin dashboard
-        app.delete('/seller/:id', async (req, res) => {
+        app.delete('/seller/:id',verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(query)
@@ -169,14 +169,14 @@ async function run() {
             
 })
         // addPhone
-        app.put('/addPhone', async (req, res) => {
+        app.put('/addPhone',verifyJWT, async (req, res) => {
             const query = req.body;
             const result = await phonesCategory.insertOne(query);
             res.send(result);
         })
         //Get My all Prodcuts
 
-        app.get('/myproduct', async (req, res) => {
+        app.get('/myproduct',verifyJWT, async (req, res) => {
             const email = req.query.email
             const query = { email: email };
             const result = await phonesCategory.find(query).toArray();
@@ -184,7 +184,7 @@ async function run() {
         })
 
         //delete products from seller in dashboard
-        app.delete('/myproducts/:id', async (req, res) => {
+        app.delete('/myproducts/:id',verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await phonesCategory.deleteOne(query);
@@ -235,6 +235,26 @@ async function run() {
             const query = { email: id }
             console.log(query);
             const result = await usersCollection.findOne(query)
+            res.send(result)
+        })
+        //set advertisement product from seller 
+        app.put('/advertise/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    status: 'advertise'
+                } 
+            }
+            const result = await phonesCategory.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+        //display the advertisement product on home 
+        app.get('/advertise', async (req, res) => {
+            const filter = req.query.status;
+            const query = { status: filter }
+            const result = await phonesCategory.find(query).toArray()
             res.send(result)
         })
 
