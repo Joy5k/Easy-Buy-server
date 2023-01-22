@@ -30,7 +30,7 @@ function verifyJWT(req, res, next) {
 
 async function run() {
     try {
-        const phonesCategory=client.db('easyBuy').collection('PhonesCategory')
+        const allPhone=client.db('easyBuy').collection('PhonesCategory')
         const Categories=client.db('easyBuy').collection('category')
         const bookingsCollection =client.db('easyBuy').collection('bookingsPhone')
         const usersCollection =client.db('easyBuy').collection('users')
@@ -44,7 +44,7 @@ async function run() {
         app.get('/category/:id', async (req, res) => {
             const id = req.params.id;
             const query = {categoryId:id}
-            const phones = await phonesCategory.find(query).toArray();
+            const phones = await allPhone.find(query).toArray();
             res.send(phones)
         })
         app.post('/payments', async (req, res) => {
@@ -68,14 +68,16 @@ async function run() {
             if (decoded.email !== email) {
              res.status(403).send({ message: 'forbidden access' });
             }
-    
-
-
             const query = { email: email };
             const bookings = await bookingsCollection.find(query).toArray();
-
             res.send(bookings);
         });
+        app.delete('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await bookingsCollection.deleteOne(query);
+            res.send(result);
+        })
         app.post('/create-payment-intent', async (req, res) => {
             const booking = req.body;
             const price = booking.price;
@@ -101,7 +103,7 @@ async function run() {
         app.post('/jwt', (req, res) => {
             const user = req.body;
             console.log(user)
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '7d' })
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '360d' })
             res.send({token})
         })
         app.get('/jwt', async (req, res) => {
@@ -171,7 +173,7 @@ async function run() {
         // addPhone
         app.put('/addPhone',verifyJWT, async (req, res) => {
             const query = req.body;
-            const result = await phonesCategory.insertOne(query);
+            const result = await allPhone.insertOne(query);
             res.send(result);
         })
         //Get My all Prodcuts
@@ -179,7 +181,7 @@ async function run() {
         app.get('/myproduct',verifyJWT, async (req, res) => {
             const email = req.query.email
             const query = { email: email };
-            const result = await phonesCategory.find(query).toArray();
+            const result = await allPhone.find(query).toArray();
             res.send(result)
         })
 
@@ -187,7 +189,7 @@ async function run() {
         app.delete('/myproducts/:id',verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
-            const result = await phonesCategory.deleteOne(query);
+            const result = await allPhone.deleteOne(query);
             res.send(result);
     
         })
@@ -200,13 +202,13 @@ async function run() {
                     report: 'reported'
                 }
             }
-            const result = await phonesCategory.updateOne(filter, updatedDoc, options);
+            const result = await allPhone.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
         app.get('/report', async (req, res) => {
             const report = req.query.report
             const query = { report: report };
-            const result = await phonesCategory.find(query).toArray();
+            const result = await allPhone.find(query).toArray();
             res.send(result)
         })
         //payment 
@@ -247,14 +249,14 @@ async function run() {
                     status: 'advertise'
                 } 
             }
-            const result = await phonesCategory.updateOne(filter, updatedDoc, options);
+            const result = await allPhone.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
         //display the advertisement product on home 
         app.get('/advertise', async (req, res) => {
             const filter = req.query.status;
             const query = { status: filter }
-            const result = await phonesCategory.find(query).toArray()
+            const result = await allPhone.find(query).toArray()
             res.send(result)
         })
 
