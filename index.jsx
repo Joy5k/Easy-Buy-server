@@ -129,7 +129,11 @@ async function run() {
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' });
            })
-        
+        //get all phone for admin route
+        app.get('/admin/allPhone', async (req, res) => {
+            const phones = await allPhone.find().toArray();
+            res.send(phones)
+         })
         // check seller
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
